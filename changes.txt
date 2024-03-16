@@ -1,0 +1,3 @@
+Enabled the NetWorkManager service with `systemctl enable NetworkManager`.
+
+Added openvscode-server autosart via. `crontab -e`.

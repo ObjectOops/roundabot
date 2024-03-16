@@ -1,0 +1,8 @@
+Hotspot commands.
+
+systemctl status NetworkManager
+systemctl start NetworkManager
+sudo nmcli device wifi hotspot ssid p-hotspot password ketchup_57 ifname wlan0
+sudo nmcli connection modify f7444c23-4355-4694-8fa1-58a4f562a032 connection.autoconnect yes connection.autoconnect-priority 100
+
+For the command above, the defaults are "no" and "0", respectively.
