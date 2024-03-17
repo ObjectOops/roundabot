@@ -1,3 +1,6 @@
 Enabled the NetWorkManager service with `systemctl enable NetworkManager`.
 
 Added openvscode-server autosart via. `crontab -e`.
+
+Changed IPv6 Ethernet configuration to the brick to be "Link-Local Only".
+Network thing in top right > Advanced Options > Edit Connections > [choose correct wired connection] > cog > IPv6 Settings > Method --> Link-Local Only.
