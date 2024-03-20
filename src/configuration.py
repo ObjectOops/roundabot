@@ -12,7 +12,12 @@ class Config:
             print_log(__file__, f"Opened configuration file {config_path}.")
             lines = fin.readlines()
             for line in lines:
-                key, value = line.strip().split()
+                line = line.strip()
+                if line.startswith("#"):
+                    continue
+                if ':' not in line:
+                    print_error(__file__, f"Configuration syntax error in \"{line}\".")
+                key, value = line.split(':')
                 if key in self._mapping:
                     print_warning(__file__, f"Key \"{key}\" is already present in {config_path}.")
                 self._mapping[key.strip()] = value.strip()
