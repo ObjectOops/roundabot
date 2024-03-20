@@ -2,6 +2,9 @@
 
 # Units are in mm, deg, mm / s, or deg / s where applicable.
 
+Start Coordinate X: 0
+Start Coordinate Y: 0
+
 Run Path: test
 # enabled | disabled
 Color Sensor: enabled
