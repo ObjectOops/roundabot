@@ -1,12 +1,24 @@
 """
 Print logging utilities.
+
+Print statements have been inserted into other project modules 
+in a way such that they are easy to remove without causing 
+errors, but will probably never be removed.
 """
 
-def print_log(file_name: str, msg: str):
-    print(f"[LOG] ({file_name}) {msg}", flush=True)
+import pybricks.media as brick
 
-def print_warning(file_name: str, msg: str):
-    print(f"\033[38;5;214m[WARNING] ({file_name}) {msg}\033[m", flush=True)
+def print_log(module_name: str, msg: str):
+    s = f"[LOG] ({module_name}) {msg}"
+    print(s, flush=True)
+    # brick.print(s)
 
-def print_error(file_name: str, msg: str):
-    print(f"\033[38;5;196m[ERROR] ({file_name}) {msg}\033[m", flush=True)
+def print_warning(module_name: str, msg: str):
+    s = f"\033[38;5;214m[WARNING] ({module_name}) {msg}\033[m"
+    print(s, flush=True)
+    brick.print(s)
+
+def print_error(module_name: str, msg: str):
+    s = f"\033[38;5;196m[ERROR] ({module_name}) {msg}\033[m"
+    print(s, flush=True)
+    brick.print(s)

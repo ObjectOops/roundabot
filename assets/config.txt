@@ -47,3 +47,5 @@ Color Sensor Trigger Type: color
 Color Sensor Trigger Ambient Delta: 10
 Color Sensor Trigger Reflection Delta: 10
 Color Sensor Trigger Hue Delta: 10
+
+Null: null
