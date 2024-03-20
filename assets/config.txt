@@ -1,0 +1,46 @@
+# Runtime configuration values.
+
+# Units are in mm, deg, mm / s, or deg / s where applicable.
+
+Run Path: test
+# enabled | disabled
+Color Sensor: enabled
+
+Target Position Tolerance: 1
+Target Speed Tolerance: 1
+
+Straight Speed: 1
+Straight Acceleration: 1
+Turn Rate: 1
+Turn Acceleration: 1
+
+Drive PID Kp: 0
+Drive PID Ki: 0
+Drive PID Kd: 0
+Drive PID Kf: 0
+Drive PID Integral Rate: 0
+Drive PID Integral Limit: 0
+
+Turn Drive PID Kp: 0
+Turn Drive PID Ki: 0
+Turn Drive PID Kd: 0
+Turn Drive PID Kf: 0
+Turn Drive PID Integral Rate: 0
+Turn Drive PID Integral Limit: 0
+
+Track Width: 10
+
+Forward Delta: 100
+Backward Delta: -100
+Steering Origin: 0
+
+Turn Right Outer Delta: 100
+Turn Right Inner Delta: 0
+Turn Left Outer Delta: 100
+Turn Left Inner Delta: 0
+
+# color | ambient | reflection | hue
+Color Sensor Trigger Type: color
+Color Sensor Trigger Ambient Delta: 10
+Color Sensor Trigger Reflection Delta: 10
+Color Sensor Trigger Hue Delta: 10
