@@ -1,6 +1,7 @@
 # Runtime configuration values.
 
 # Units are in mm, deg, mm / s, or deg / s where applicable.
+# Time is in ms.
 
 # enabled | disabled
 Competition Mode: disabled
@@ -10,6 +11,8 @@ Start Coordinate Y: 0
 
 Wheel Diameter: 50
 Turn Steering Angle: 30
+Turn Wait: 250
+Cycle Wait: 50
 
 Run Path: test
 # enabled | disabled
@@ -59,15 +62,23 @@ Turn Left Inner Delta: 0
 Turn Right Outer Delta: 100
 Turn Right Inner Delta: 0
 
+Turn Forward Delta: 50
+
 # color | ambient | reflection | hue
 Color Sensor Trigger Type: color
 Color Sensor Trigger Ambient Delta: 10
 Color Sensor Trigger Reflection Delta: 10
 Color Sensor Trigger Hue Delta: 10
 
+Color Sensor Pre Forward Delta: 5
+Color Sensor Forward Delta: 10
+Color Sensor Backward Delta: 10
+
 # forward / reverse
 Left Motor Direction: reverse
 Right Motor Direction: reverse
 Steering Motor Direction: reverse
+
+Low-Pass Filter Gain: 0.8
 
 Null: null

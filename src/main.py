@@ -36,6 +36,8 @@ Follow movements. Call movement functions from drivetrain.
 Color sensor movement function only uses the color sensor if it's active in config.
 
 Remember to reset the encoders and related items on actual start up.
+
+Configuration redundancy testing.
 """
 
 # Create your objects here

@@ -8,6 +8,7 @@ class Config:
 
     def __init__(self, config_path: str):
         self._mapping = dict()
+        self._used = set()
         with open(config_path, 'r') as fin:
             print_log(__name__, f"Opened configuration file {config_path}.")
             lines = fin.readlines()
@@ -26,6 +27,7 @@ class Config:
     def get_str(self, key: str) -> str:
         if key not in self._mapping:
             print_error(__name__, f"Key \"{key}\" not found.")
+        self._used.add(key)
         return self._mapping[key]
     
     def get_num(self, key: str) -> float:
@@ -35,4 +37,8 @@ class Config:
             value = self._mapping[key]
             if not value.isnumeric():
                 print_error(__name__, f"Value \"{value}\" from key \"{key}\" is not numeric.")
+        self._used.add(key)
         return float(self._mapping[key])
+
+    def redundant(self):
+        return len(self._used) != len(self._mapping)
