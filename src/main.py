@@ -9,6 +9,8 @@ import drivetrain
 """
 Pseudo-code
 
+(Also add test programs for manual control and default measuring.)
+
 Do print debugs in case of runtime issue.
 PIDF stuff.
 
@@ -32,6 +34,8 @@ Wait for touch sensor to be actuated.
 
 Follow movements. Call movement functions from drivetrain.
 Color sensor movement function only uses the color sensor if it's active in config.
+
+Remember to reset the encoders and related items on actual start up.
 """
 
 # Create your objects here

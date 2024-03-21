@@ -1,30 +1,42 @@
 """
 The Drivetrain.
 
-Since the robot is designed to only turn around one of the 
-powered wheels as a pivot, the Pybricks DriveBase turning 
-will not be used.
+Since the robot is designed to use either the left or right wheel
+as a pivot when turning left or right, the Pybricks DriveBase turning 
+is a secondary feature.
 """
 
 from enum import Enum, auto
+import math
 
-from printing import *
+from pybricks.parameters import Direction, Port
+from pybricks.robotics import DriveBase
+from pybricks.ev3devices import Motor
+from pybricks.tools import wait
+
 from configuration import Config
+from printing import *
 
 class Drivetrain:
 
     def __init__(self, config: Config):
-        if (cs := config.get_str("Color Sensor")) != "enabled" and cs != "disabled":
-            print_warning(__name__, "Invalid value for \"Color Sensor\". Falling back to disabled.")
-        self.color_sensor_enabled = config.get_str("Color Sensor") == "enabled"
+        self.wheel_diameter = config.get_num("Wheel Diameter")
+        self.turn_steering_angle = config.get_num("Turn Steering Angle")
+
+        self.color_sensor_enabled = is_enabled(config.get_str("Color Sensor"))
         
-        self.target_position_tolerance = config.get_num("Target Position Tolerance")
-        self.speed_tolerance = config.get_num("Target Speed Tolerance")
+        self.distance_position_tolerance = config.get_num("Target Distance Position Tolerance")
+        self.distance_speed_tolerance = config.get_num("Target Distance Speed Tolerance")
+        self.heading_position_tolerance = config.get_num("Target Heading Position Tolerance")
+        self.heading_speed_tolerance = config.get_num("Target Heading Speed Tolerance")
+        self.distance_tolerance_defaults = is_enabled(config.get_str("Use Distance Tolerance Defaults"))
+        self.heading_tolerance_defaults = is_enabled(config.get_str("Use Heading Tolerance Defaults"))
         
         self.straight_speed = config.get_num("Straight Speed")
         self.straight_acceleration = config.get_num("Straight Acceleration")
         self.turn_rate = config.get_num("Turn Rate")
         self.turn_acceleration = config.get_num("Turn Acceleration")
+        self.kinematic_defaults = is_enabled(config.get_str("Use Kinematic Defaults"))
         
         self.dpid_Kp = config.get_num("Drive PID Kp")
         self.dpid_Ki = config.get_num("Drive PID Ki")
@@ -32,6 +44,7 @@ class Drivetrain:
         self.dpid_Kf = config.get_num("Drive PID Kf")
         self.dpid_ir = config.get_num("Drive PID Integral Rate")
         self.dpid_lm = config.get_num("Drive PID Integral Limit")
+        self.dpid_defaults = is_enabled(config.get_str("Use Drive PID Defaults"))
 
         self.tpid_Kp = config.get_num("Turn PID Kp")
         self.tpid_Ki = config.get_num("Turn PID Ki")
@@ -39,6 +52,7 @@ class Drivetrain:
         self.tpid_Kf = config.get_num("Turn PID Kf")
         self.tpid_ir = config.get_num("Turn PID Integral Rate")
         self.tpid_lm = config.get_num("Turn PID Integral Limit")
+        self.tpid_defaults = is_enabled(config.get_str("Use Turn PID Defaults"))
 
         self.track_width = config.get_num("Track Width")
 
@@ -47,10 +61,10 @@ class Drivetrain:
         if self.forward_delta - self.backward_delta >= 0.1 * 0.5 * (self.forward_delta + self.backward_delta):
             print_warning(__name__, "Forward and backward deltas are too far apart.")
         
-        self.tr_outer_delta = config.get_num("Turn Right Outer Delta")
-        self.tr_inner_delta = config.get_num("Turn Right Inner Delta")
         self.tl_outer_delta = config.get_num("Turn Left Outer Delta")
         self.tl_inner_delta = config.get_num("Turn Left Inner Delta")
+        self.tr_outer_delta = config.get_num("Turn Right Outer Delta")
+        self.tr_inner_delta = config.get_num("Turn Right Inner Delta")
 
         csm = config.get_str("Color Sensor Trigger Type")
         valid_color_sensor_modes = {
@@ -62,6 +76,108 @@ class Drivetrain:
         if csm not in valid_color_sensor_modes:
             print_error(f"Invalid color sensor trigger type \"{csm}\".")
         self.color_sensor_mode = valid_color_sensor_modes[csm]
+
+        self.left_motor_direction = get_direction(config.get_str("Left Motor Direction"))
+        self.right_motor_direction = get_direction(config.get_str("Right Motor Direction"))
+        self.steering_motor_direction = get_direction(config.get_str("Steering Motor Direction"))
+
+        self.left_motor = Motor(Port.D, positive_direction=self.left_motor_direction)
+        self.right_motor = Motor(Port.A, position_direction=self.right_motor_direction)
+        self.steering_motor = Motor(Port.B, positive_direction=self.steering_motor_direction)
+        self.drive_base = DriveBase(self.left_motor, self.right_motor, self.wheel_diameter, self.track_width)
+
+        if not self.kinematic_defaults:
+            self.drive_base.settings(self.straight_speed, self.straight_acceleration, self.turn_rate, self.turn_acceleration)
+            # _, _, left_actuation = self.left_motor.limits()
+            # self.left_motor.control.limits(self.straight_speed, self.straight_acceleration, left_actuation)
+            # _, _, right_actuation = self.right_motor.limits()
+            # self.right_motor.control.limits(self.straight_speed, self.straight_acceleration, right_actuation)
+        if not self.dpid_defaults:
+            self.drive_base.distance_control.pid(self.dpid_Kp, self.dpid_Ki, self.dpid_Kd, self.dpid_lm, self.dpid_ir, self.dpid_Kf)
+        if not self.tpid_defaults:
+            self.drive_base.heading_control.pid(self.tpid_Kp, self.tpid_Ki, self.tpid_Kd, self.tpid_lm, self.tpid_ir, self.tpid_Kf)
+            # self.left_motor.control.pid(self.tpid_Kp, self.tpid_Ki, self.tpid_Kd, self.tpid_lm, self.tpid_ir, self.tpid_Kf)
+            # self.right_motor.control.pid(self.tpid_Kp, self.tpid_Ki, self.tpid_Kd, self.tpid_lm, self.tpid_ir, self.tpid_Kf)
+        if not self.distance_tolerance_defaults:
+            self.drive_base.distance_control.target_tolerances(self.distance_speed_tolerance, self.distance_position_tolerance)
+        if not self.heading_tolerance_defaults:
+            self.drive_base.heading_control.target_tolerances(self.heading_speed_tolerance, self.heading_position_tolerance)
+            # self.left_motor.target_tolerances(self.heading_speed_tolerance, self.heading_position_tolerance)
+            # self.right_motor.target_tolerances(self.heading_speed_tolerance, self.heading_position_tolerance)
+
+        self.left_motor.stop()
+        self.right_motor.stop()
+        self.drive_base.stop()
+        
+    def is_enabled(s: str) -> bool:
+        if s != "enabled" and s != "disabled":
+            print_warning(__name__, f"Invalid boolean value \"{s}\". Falling back to disabled.")
+        return s == "enabled"
+
+    def get_direction(s: str) -> Direction:
+        if s != "forward" and s != "reverse":
+            print_warning(__name__, f"Invalid direction value \"{s}\". Falling back to forward.")
+        return Direction.CLOCKWISE if s == "forward" else Direction.COUNTERCLOCKWISE
+    
+    def drive_forward(self):
+        self.steering_motor.track_target(0)
+        wait(250)
+        self.drive_base.straight(self.forward_delta)
+
+    def drive_backward():
+        self.steering_motor.track_target(0)
+        wait(250)
+        self.drive_base.straight(-self.backward_delta)
+    
+    def turn_left():
+        self.drive_base.stop()
+        self.steering_motor.track_target(self.turn_steering_angle)
+        wait(250)
+        
+        heading = self.drive_base.angle()
+        target_heading = heading - 90
+        left = self.left_motor.angle() / 180 * math.pi * self.wheel_diameter / 2
+        original_left = left + self.tl_inner_delta
+        right = self.right_motor.angle() / 180 * math.pi * self.wheel_diameter / 2
+        while abs(err := heading - target_heading) > self.heading_position_tolerance:
+            heading, left, right = calculate_heading_manual(heading, left, right)
+            self.right_motor.run(err * self.tpid_Kp)
+            self.left_motor.run((original_left - left) * self.dpid_Kp)
+        
+        # Alternatively, just run to a predetermined value.
+        # self.left_motor.hold()
+        # self.right_motor.run_angle(self.straight_speed, self.tl_outer_delta)
+
+    def turn_right():
+        self.drive_base.stop()
+        self.steering_motor.track_target(self.turn_steering_angle)
+        wait(250)
+        
+        heading = self.drive_base.angle()
+        target_heading = heading + 90
+        left = self.left_motor.angle() / 180 * math.pi * self.wheel_diameter / 2
+        right = self.right_motor.angle() / 180 * math.pi * self.wheel_diameter / 2
+        original_right = right + self.tr_inner_delta
+        while abs(err := heading - target_heading) > self.heading_position_tolerance:
+            heading, left, right = calculate_heading_manual(heading, left, right)
+            self.left_motor.run(err * self.tpid_Kp)
+            self.right_motor.run((original_right - right) * self.dpid_Kp)
+        
+        # Alternatively, just run to a predetermined value.
+        # self.right_motor.hold()
+        # self.left_motor.run_angle(self.straight_speed, self.tr_outer_delta)
+    
+    def calculate_heading_manual(heading_previous, left_previous: float, right_previous: float) -> tuple[float, float, float]:
+        # Reference: https://github.com/8696-Trobotix/mollusc/blob/03b87be3b62fa3d2800822e34b83919a329c2cbc/auto/odometry/DeadWheels.java
+        dl = self.left_motor.angle() / 180 * math.pi * self.wheel_diameter / 2 - left_previous
+        dr = self.right_motor.angle() / 180 * math.pi * self.wheel_diameter / 2 - right_previous
+        dh = (dl - dr) / self.track_width
+        return (heading_previous + dh, left_previous + dl, right_previous + dr)
+
+    def turn_in_place(angle: float):
+        self.steering_motor.track_target(90 * math.copysign(1, angle))
+        wait(250)
+        self.drive_base.turn(angle)
 
 class ColorSensorMode(Enum):
     BASIC_COLOR = auto()

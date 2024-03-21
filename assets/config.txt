@@ -2,20 +2,33 @@
 
 # Units are in mm, deg, mm / s, or deg / s where applicable.
 
+# enabled | disabled
+Competition Mode: disabled
+
 Start Coordinate X: 0
 Start Coordinate Y: 0
+
+Wheel Diameter: 50
+Turn Steering Angle: 30
 
 Run Path: test
 # enabled | disabled
 Color Sensor: enabled
 
-Target Position Tolerance: 1
-Target Speed Tolerance: 1
+Target Distance Position Tolerance: 1
+Target Distance Speed Tolerance: 1
+Target Heading Position Tolerance: 1
+Target Heading Speed Tolerance: 1
+# enabled | disabled
+Use Distance Tolerance Defaults: disabled
+Use Heading Tolerance Defaults: disabled
 
 Straight Speed: 1
 Straight Acceleration: 1
 Turn Rate: 1
 Turn Acceleration: 1
+# enabled | disabled
+Use Kinematic Defaults: disabled
 
 Drive PID Kp: 0
 Drive PID Ki: 0
@@ -23,6 +36,8 @@ Drive PID Kd: 0
 Drive PID Kf: 0
 Drive PID Integral Rate: 0
 Drive PID Integral Limit: 0
+# enabled | disabled
+Use Drive PID Defaults: disabled
 
 Turn Drive PID Kp: 0
 Turn Drive PID Ki: 0
@@ -30,6 +45,8 @@ Turn Drive PID Kd: 0
 Turn Drive PID Kf: 0
 Turn Drive PID Integral Rate: 0
 Turn Drive PID Integral Limit: 0
+# enabled | disabled
+Use Turn PID Defaults: disabled
 
 Track Width: 10
 
@@ -37,15 +54,20 @@ Forward Delta: 100
 Backward Delta: -100
 Steering Origin: 0
 
-Turn Right Outer Delta: 100
-Turn Right Inner Delta: 0
 Turn Left Outer Delta: 100
 Turn Left Inner Delta: 0
+Turn Right Outer Delta: 100
+Turn Right Inner Delta: 0
 
 # color | ambient | reflection | hue
 Color Sensor Trigger Type: color
 Color Sensor Trigger Ambient Delta: 10
 Color Sensor Trigger Reflection Delta: 10
 Color Sensor Trigger Hue Delta: 10
+
+# forward / reverse
+Left Motor Direction: reverse
+Right Motor Direction: reverse
+Steering Motor Direction: reverse
 
 Null: null
