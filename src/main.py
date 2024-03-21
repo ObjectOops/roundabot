@@ -62,6 +62,6 @@ print('Hello, world!')
 
 ev3.speaker.beep(frequency=1000, duration=500)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("Started.")
     drivetrain.test_func()
