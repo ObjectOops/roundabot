@@ -13,6 +13,7 @@ Wheel Diameter: 50
 Turn Steering Angle: 30
 Turn Wait: 250
 Cycle Wait: 50
+Move Timeout: 5000
 
 Run Path: test
 # enabled | disabled

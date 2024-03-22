@@ -11,11 +11,12 @@ import math
 
 from pybricks.parameters import Direction, Port, Color
 from pybricks.ev3devices import Motor, ColorSensor
+from pybricks.tools import StopWatch, wait
 from pybricks.robotics import DriveBase
-from pybricks.tools import wait
 
 from configuration import Config
 from printing import *
+from filter import *
 
 class Drivetrain:
 
@@ -30,6 +31,7 @@ class Drivetrain:
         self.turn_steering_angle = config.get_num("Turn Steering Angle")
         self.turn_wait = config.get_num("Turn Wait")
         self.cycle_wait = config.get_num("Cycle Wait")
+        self.move_timeout = config.get_num("Move Timeout")
 
         self.color_sensor_enabled = is_enabled(config.get_str("Color Sensor"))
         
@@ -173,8 +175,9 @@ class Drivetrain:
         wait(self.turn_wait)
         self.drive_base.straight(self.color_sensor_pre_forward_delta)
         target_distance = self.drive_base.distance() + self.color_sensor_forward_delta
-        while abs(err := self.drive_base.distance() - target_distance) > self.distance_position_tolerance:
-            self.drive_base.drive(err * self.dpid_Kp, self.turn_rate)
+        timer = StopWatch()
+        while abs(err := self.drive_base.distance() - target_distance) > self.distance_position_tolerance and timer.time() < self.move_timeout:
+            self.drive_base.drive(err * self.dpid_Kp, 0)
             if next(color_sensor_generator):
                 print_log(__name__, f"Color sensor detected target point.")
                 self.drive_base.straight(-self.color_sensor_backward_delta)
@@ -201,22 +204,6 @@ class Drivetrain:
                 while True:
                     r, g, b = self.color_sensor.rgb()
                     yield abs(rgb2hsv(r, g, b)[0] - initial_hue) >= self.color_sensor_mode[1]
-                
-    def rgb2hsv(r: float, g: float, b: float) -> tuple[float, float, float]:
-        v = ma = max(r, g, b)
-        mi = min(r, g, b)
-        s = (ma - mi) / ma
-        t = 0
-        if ma == r:
-            t = 0 + (g - b) / (ma - mi)
-        elif ma == g:
-            t = 2 + (b - r) / (ma - mi)
-        elif ma == b:
-            t = 4 + (r - g) / (ma - mi)
-        h = 60 * t
-        if h < 0:
-            h += 360
-        return (h, s, v)
 
     def drive_backward():
         self.steering_motor.track_target(0)
@@ -233,7 +220,8 @@ class Drivetrain:
         left = self.left_motor.angle() / 180 * math.pi * self.wheel_diameter / 2
         original_left = left + self.tl_inner_delta
         right = self.right_motor.angle() / 180 * math.pi * self.wheel_diameter / 2
-        while abs(err := heading - target_heading) > self.heading_position_tolerance:
+        timer = StopWatch()
+        while abs(err := heading - target_heading) > self.heading_position_tolerance and timer.time() < self.move_timeout:
             heading, left, right = calculate_heading_manual(heading, left, right)
             self.right_motor.run(err * self.tpid_Kp)
             self.left_motor.run((original_left - left) * self.dpid_Kp)
@@ -255,7 +243,8 @@ class Drivetrain:
         left = self.left_motor.angle() / 180 * math.pi * self.wheel_diameter / 2
         right = self.right_motor.angle() / 180 * math.pi * self.wheel_diameter / 2
         original_right = right + self.tr_inner_delta
-        while abs(err := heading - target_heading) > self.heading_position_tolerance:
+        timer = StopWatch()
+        while abs(err := heading - target_heading) > self.heading_position_tolerance and timer.time() < self.move_timeout:
             heading, left, right = calculate_heading_manual(heading, left, right)
             self.left_motor.run(err * self.tpid_Kp)
             self.right_motor.run((original_right - right) * self.dpid_Kp)

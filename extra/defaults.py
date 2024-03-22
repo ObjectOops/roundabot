@@ -1,5 +1,6 @@
 from pybricks.robotics import DriveBase
 from pybricks.ev3devices import Motor
+from pybricks.parameters import Port
 
 if __name__ == "__main__":
     left_motor = Motor(Port.D)

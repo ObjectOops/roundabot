@@ -1,11 +1,5 @@
 #!/usr/bin/env pybricks-micropython
 
-from pybricks.hubs import EV3Brick
-from pybricks.ev3devices import Motor
-from pybricks.parameters import Port
-
-import drivetrain
-
 """
 Pseudo-code
 
@@ -39,6 +33,12 @@ Remember to reset the encoders and related items on actual start up.
 
 Configuration redundancy testing.
 """
+
+from pybricks.hubs import EV3Brick
+from pybricks.ev3devices import Motor
+from pybricks.parameters import Port
+
+import drivetrain
 
 # Create your objects here
 
