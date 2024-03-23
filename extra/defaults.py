@@ -1,13 +1,15 @@
+#!/usr/bin/env pybricks-micropython
+
 from pybricks.robotics import DriveBase
 from pybricks.ev3devices import Motor
 from pybricks.parameters import Port
 
 if __name__ == "__main__":
     left_motor = Motor(Port.D)
-    right_motor = Motor(Port.A)
-    steering_motor = Motor(Port.B)
+    right_motor = Motor(Port.B)
+    steering_motor = Motor(Port.A)
     
-    drive_base = DriveBase(left_motor, right_motor, 50, 10)
+    drive_base = DriveBase(left_motor, right_motor, 43, 170)
     straight_speed, straight_acceleration, turn_rate, turn_acceleration = drive_base.settings()
 
     dbd_speed, dbd_acceleration, _ = drive_base.distance_control.limits()
@@ -58,4 +60,4 @@ if __name__ == "__main__":
     ]
 
     for item in items:
-        print(f"{item[0]}: {item[1]}")
+        print(item[0], ":", item[1])

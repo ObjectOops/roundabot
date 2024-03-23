@@ -1,0 +1,24 @@
+Drive Base Straight Speed : 100
+Drive Base Straight Acceleration : 200
+Drive Base Turn Rate : 90
+Drive Base Turn Acceleration : 180
+Drive Base Speed : 300
+Drive Base Acceleration : 600
+Drive Base PIDF : (200, 600, 2, 8, 2, 0)
+Drive Base Speed Tolerance : 19
+Drive Base Position Tolerance : 2
+Left Motor Speed : 800
+Left Motor Acceleration : 1600
+Left Motor PIDF : (400, 1200, 5, 23, 5, 0)
+Left Motor Speed Tolerance : 50
+Left Motor Position Tolerance : 5
+Right Motor Speed : 800
+Right Motor Acceleration : 1600
+Right Motor PIDF : (400, 1200, 5, 23, 5, 0)
+Right Motor Speed Tolerance : 50
+Right Motor Position Tolerance : 5
+Steering Motor Speed : 1000
+Steering Motor Acceleration : 4000
+Steering Motor PIDF : (300, 400, 3, 23, 5, 20)
+Steering Motor Speed Tolerance : 50
+Steering Motor Position Tolerance : 5
