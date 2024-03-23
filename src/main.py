@@ -42,12 +42,12 @@ if __name__ == "__main__":
         "ic" : drivetrain.drive_forward_color_sensor
     })
     print_log(__name__, "Initialized path.")
-    path.load_path(f"assets/paths/{config.get_str("Run Path")}")
+    path.load_path("assets/paths/" + config.get_str("Run Path"))
     print_log(__name__, "Loaded path.")
     prompt_continue()
 
     for option in config._mapping:
-        s = f"{option}: {config._mapping[option]}"
+        s = "{option}: " + config._mapping[option]
         print_log(__name__, s)
         brick.print(s)
 
@@ -69,7 +69,7 @@ if __name__ == "__main__":
         prompt_continue()
     
     if config.redundant():
-        print_warning(__name__, f"Unused configuration options detected {config._used.difference(config._mapping.keys())}")
+        print_warning(__name__, "Unused configuration options detected " + config._used.difference(config._mapping.keys()))
     
     print_log("Configuration complete.")
     ev3.speaker.say("Configuration complete. Waiting for touch sensor actuation.")

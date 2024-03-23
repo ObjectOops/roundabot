@@ -6,7 +6,6 @@ as a pivot when turning left or right, the Pybricks DriveBase turning
 is a secondary feature.
 """
 
-from enum import Enum, auto
 import math
 
 from pybricks.parameters import Direction, Port, Color
@@ -21,6 +20,10 @@ from filter import *
 class Drivetrain:
 
     def __init__(self, config: Config):
+        self.left_motor_direction = get_direction(config.get_str("Left Motor Direction"))
+        self.right_motor_direction = get_direction(config.get_str("Right Motor Direction"))
+        self.steering_motor_direction = get_direction(config.get_str("Steering Motor Direction"))
+
         self.left_motor = Motor(Port.D, positive_direction=self.left_motor_direction)
         self.right_motor = Motor(Port.A, position_direction=self.right_motor_direction)
         self.steering_motor = Motor(Port.B, positive_direction=self.steering_motor_direction)
@@ -121,16 +124,12 @@ class Drivetrain:
             "hue" : (ColorSensorMode.HUE, "Color Sensor Trigger Hue Delta")
         }
         if csm not in valid_color_sensor_modes:
-            print_error(f"Invalid color sensor trigger type \"{csm}\".")
+            print_error("Invalid color sensor trigger type \"" + csm + "\".")
         self.color_sensor_mode = valid_color_sensor_modes[csm]
 
         self.color_sensor_pre_forward_delta = config.get_num("Color Sensor Pre Forward Delta")
         self.color_sensor_forward_delta = config.get_num("Color Sensor Forward Delta")
         self.color_sensor_backward_delta = config.get_num("Color Sensor Backward Delta")
-
-        self.left_motor_direction = get_direction(config.get_str("Left Motor Direction"))
-        self.right_motor_direction = get_direction(config.get_str("Right Motor Direction"))
-        self.steering_motor_direction = get_direction(config.get_str("Steering Motor Direction"))
 
         self.drive_base.settings(self.straight_speed, self.straight_acceleration, self.turn_rate, self.turn_acceleration)
         # _, _, left_actuation = self.left_motor.limits()
@@ -156,7 +155,7 @@ class Drivetrain:
         
     def get_direction(s: str) -> Direction:
         if s != "forward" and s != "reverse":
-            print_warning(__name__, f"Invalid direction value \"{s}\". Falling back to forward.")
+            print_warning(__name__, "Invalid direction value \"" + s + "\". Falling back to forward.")
         return Direction.CLOCKWISE if s == "forward" else Direction.COUNTERCLOCKWISE
     
     def drive_forward(self):
@@ -171,34 +170,37 @@ class Drivetrain:
         self.drive_base.straight(self.color_sensor_pre_forward_delta)
         target_distance = self.drive_base.distance() + self.color_sensor_forward_delta
         timer = StopWatch()
-        while abs(err := self.drive_base.distance() - target_distance) > self.distance_position_tolerance and timer.time() < self.move_timeout:
+        while True:
+            err = self.drive_base.distance() - target_distance
+            cond = abs(err) > self.distance_position_tolerance and timer.time() < self.move_timeout
+            if not cond:
+                break
             self.drive_base.drive(err * self.dpid_Kp, 0)
             if next(color_sensor_generator):
-                print_log(__name__, f"Color sensor detected target point.")
+                print_log(__name__, "Color sensor detected target point.")
                 self.drive_base.straight(-self.color_sensor_backward_delta)
                 break
             wait(self.cycle_wait)
     
     def test_color_sensor(self) -> bool:
-        match self.color_sensor_mode[0]:
-            case ColorSensorMode.BASIC_COLOR:
-                initial_color = self.color_sensor.color()
-                while True:
-                    yield self.color_sensor.color() != initial_color
-            case ColorSensorMode.AMBIENT:
-                initial_ambience = self.color_sensor.ambient()
-                while True:
-                    yield abs(self.color_sensor.ambient() - initial_ambience) >= self.color_sensor_mode[1]
-            case ColorSensorMode.REFLECTION:
-                initial_reflection = self.color_sensor.reflection()
-                while True:
-                    yield abs(self.color_sensor.reflection() - initial_reflection) >= self.color_sensor_mode[1]
-            case ColorSensorMode.HUE:
+        if self.color_sensor_mode[0] == ColorSensorMode.BASIC_COLOR:
+            initial_color = self.color_sensor.color()
+            while True:
+                yield self.color_sensor.color() != initial_color
+        elif self.color_sensor_mode[0] == ColorSensorMode.AMBIENT:
+            initial_ambience = self.color_sensor.ambient()
+            while True:
+                yield abs(self.color_sensor.ambient() - initial_ambience) >= self.color_sensor_mode[1]
+        elif self.color_sensor_mode[0] == ColorSensorMode.REFLECTION:
+            initial_reflection = self.color_sensor.reflection()
+            while True:
+                yield abs(self.color_sensor.reflection() - initial_reflection) >= self.color_sensor_mode[1]
+        elif self.color_sensor_mode[0] == ColorSensorMode.HUE:
+            r, g, b = self.color_sensor.rgb()
+            initial_hue = rgb2hsv(r, g, b)[0]
+            while True:
                 r, g, b = self.color_sensor.rgb()
-                initial_hue = rgb2hsv(r, g, b)[0]
-                while True:
-                    r, g, b = self.color_sensor.rgb()
-                    yield abs(rgb2hsv(r, g, b)[0] - initial_hue) >= self.color_sensor_mode[1]
+                yield abs(rgb2hsv(r, g, b)[0] - initial_hue) >= self.color_sensor_mode[1]
 
     def drive_backward():
         self.steering_motor.track_target(0)
@@ -216,7 +218,11 @@ class Drivetrain:
         original_left = left + self.tl_inner_delta
         right = self.right_motor.angle() / 180 * math.pi * self.wheel_diameter / 2
         timer = StopWatch()
-        while abs(err := heading - target_heading) > self.heading_position_tolerance and timer.time() < self.move_timeout:
+        while True:
+            err = heading - target_heading
+            cond = abs(err) > self.heading_position_tolerance and timer.time() < self.move_timeout
+            if not cond:
+                break
             heading, left, right = calculate_heading_manual(heading, left, right)
             self.right_motor.run(err * self.tpid_Kp)
             self.left_motor.run((original_left - left) * self.dpid_Kp)
@@ -239,7 +245,11 @@ class Drivetrain:
         right = self.right_motor.angle() / 180 * math.pi * self.wheel_diameter / 2
         original_right = right + self.tr_inner_delta
         timer = StopWatch()
-        while abs(err := heading - target_heading) > self.heading_position_tolerance and timer.time() < self.move_timeout:
+        while True:
+            err = heading - target_heading
+            cond = abs(err) > self.heading_position_tolerance and timer.time() < self.move_timeout
+            if not cond:
+                break
             heading, left, right = calculate_heading_manual(heading, left, right)
             self.left_motor.run(err * self.tpid_Kp)
             self.right_motor.run((original_right - right) * self.dpid_Kp)
@@ -263,8 +273,8 @@ class Drivetrain:
         wait(self.turn_wait)
         self.drive_base.turn(angle)
 
-class ColorSensorMode(Enum):
-    BASIC_COLOR = auto()
-    AMBIENT = auto()
-    REFLECTION = auto()
-    HUE = auto()
+class ColorSensorMode():
+    BASIC_COLOR = 1
+    AMBIENT = 2
+    REFLECTION = 3
+    HUE = 4

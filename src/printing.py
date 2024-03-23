@@ -9,16 +9,16 @@ errors, but will probably never be removed.
 import pybricks.media as brick
 
 def print_log(module_name: str, msg: str):
-    s = f"[LOG] ({module_name}) {msg}"
+    s = "[LOG] (" + module_name + ") " + msg
     print(s, flush=True)
     # brick.print(s)
 
 def print_warning(module_name: str, msg: str):
-    s = f"\033[38;5;214m[WARNING] ({module_name}) {msg}\033[m"
+    s = "\033[38;5;214m[WARNING] (" + module_name + ") " + msg + "\033[m"
     print(s, flush=True)
     brick.print(s)
 
 def print_error(module_name: str, msg: str):
-    s = f"\033[38;5;196m[ERROR] ({module_name}) {msg}\033[m"
+    s = "\033[38;5;196m[ERROR] (" + module_name + ") " + msg + "\033[m"
     print(s, flush=True)
     brick.print(s)
