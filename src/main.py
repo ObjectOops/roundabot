@@ -1,67 +1,83 @@
 #!/usr/bin/env pybricks-micropython
 
-"""
-Pseudo-code
+import sys
 
-(Also add test programs for manual control and default measuring.)
-
-Do print debugs in case of runtime issue.
-PIDF stuff.
-
-Read and parse config file.
-- Path to use.
-- Color sensor activation.
-- Front / back movements.
-- Turn left / right movements.
-- Color sensor trigger point.
-Call drivetrain initialization function with configuration.
-- Need formula for steering servo angle. Use gyro?
-- Front / back with color sensor logic.
-
-Read and parse movements file.
-
-Print configuration info.
-Calculate end coordinate.
-Speak ready.
-
-Wait for touch sensor to be actuated.
-
-Follow movements. Call movement functions from drivetrain.
-Color sensor movement function only uses the color sensor if it's active in config.
-
-Remember to reset the encoders and related items on actual start up.
-
-Configuration redundancy testing.
-"""
-
+from pybricks.parameters import Port, Button
+from pybricks.ev3devices import TouchSensor
 from pybricks.hubs import EV3Brick
-from pybricks.ev3devices import Motor
-from pybricks.parameters import Port
+from pybricks.tools import wait
+import pybricks.media as brick
 
-import drivetrain
+from configuration import Config, is_enabled
+from drivetrain import Drivetrain
+from path import Path, ActionType
+from printing import *
 
-# Create your objects here
-
-# Initialize the EV3 Brick.
-ev3 = EV3Brick()
-
-# Initialize a motor at port B.
-test_motor = Motor(Port.S1)
-
-# Write your program here
-
-# Play a sound.
-# ev3.speaker.beep()
-
-# Run the motor up to 500 degrees per second. To a target angle of 90 degrees.
-test_motor.run_target(500, 90)
-
-# Play another beep sound.
-
-print('Hello, world!')
-
-ev3.speaker.beep(frequency=1000, duration=500)
+def prompt_continue():
+    print_log(__name__, "Waiting for continue...")
+    pressed = None
+    while True:
+        pressed = ev3.buttons.pressed()
+        if Button.CENTER in pressed or Button.DOWN in pressed:
+            break
+        wait(100)
+    if Button.DOWN in pressed:
+        sys.exit()
+    while Button.CENTER in ev3.buttons.pressed():
+        wait(100)
 
 if __name__ == "__main__":
-    print("Started.")
-    drivetrain.test_func()
+    ev3 = EV3Brick()
+    start_button = TouchSensor(Port.S4)
+
+    config = Config("assets/config.txt")
+    print_log(__name__, "Initialized configuration.")
+    drivetrain = Drivetrain(config)
+    print_log(__name__, "Initialized drivetrain.")
+    path = Path({
+        "i" : drivetrain.drive_forward, 
+        "k" : drivetrain.drive_backward, 
+        "j" : drivetrain.turn_left, 
+        "l" : drivetrain.turn_right, 
+        "ic" : drivetrain.drive_forward_color_sensor
+    })
+    print_log(__name__, "Initialized path.")
+    path.load_path(f"assets/paths/{config.get_str("Run Path")}")
+    print_log(__name__, "Loaded path.")
+    prompt_continue()
+
+    for option in config._mapping:
+        s = f"{option}: {config._mapping[option]}"
+        print_log(__name__, s)
+        brick.print(s)
+
+    prompt_continue()
+    if is_enabled(config.get_str("Competition Mode")):
+        field = [(i, j) for j in range(4) for i in range(4)]
+        coords = path.calculate_coords(config.get_num("Start Coordinate X"), config.get_num("Start Coordinate Y"), {
+            "i" : ActionType.FORWARDS, 
+            "k" : ActionType.BACKWARDS, 
+            "j" : ActionType.LEFT, 
+            "l" : ActionType.RIGHT
+        })
+        tile = 10
+        ev3.screen.clear()
+        for x, y in field:
+            ev3.screen.draw_box(x, y, x + tile, y + tile)
+        for x, y in coords:
+            ev3.screen.draw_box(x, y, x + tile, y + tile, fill=True)
+        prompt_continue()
+    
+    if config.redundant():
+        print_warning(__name__, f"Unused configuration options detected {config._used.difference(config._mapping.keys())}")
+    
+    print_log("Configuration complete.")
+    ev3.speaker.say("Configuration complete. Waiting for touch sensor actuation.")
+
+    while not start_button.pressed():
+        wait(100)
+    
+    while not path.complete():
+        action = path.next_action()
+
+        action()

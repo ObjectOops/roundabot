@@ -14,7 +14,7 @@ from pybricks.ev3devices import Motor, ColorSensor
 from pybricks.tools import StopWatch, wait
 from pybricks.robotics import DriveBase
 
-from configuration import Config
+from configuration import Config, is_enabled
 from printing import *
 from filter import *
 
@@ -154,11 +154,6 @@ class Drivetrain:
         self.right_motor.stop()
         self.drive_base.stop()
         
-    def is_enabled(s: str) -> bool:
-        if s != "enabled" and s != "disabled":
-            print_warning(__name__, f"Invalid boolean value \"{s}\". Falling back to disabled.")
-        return s == "enabled"
-
     def get_direction(s: str) -> Direction:
         if s != "forward" and s != "reverse":
             print_warning(__name__, f"Invalid direction value \"{s}\". Falling back to forward.")

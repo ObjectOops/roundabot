@@ -40,5 +40,10 @@ class Config:
         self._used.add(key)
         return float(self._mapping[key])
 
-    def redundant(self):
+    def redundant(self) -> bool:
         return len(self._used) != len(self._mapping)
+
+def is_enabled(s: str) -> bool:
+    if s != "enabled" and s != "disabled":
+        print_warning(__name__, f"Invalid boolean value \"{s}\". Falling back to disabled.")
+    return s == "enabled"

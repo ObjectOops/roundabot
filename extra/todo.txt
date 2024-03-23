@@ -1,0 +1,29 @@
+(Also add test programs for manual control and default measuring.)
+
+Do print debugs in case of runtime issue.
+PIDF stuff.
+
+Read and parse config file.
+- Path to use.
+- Color sensor activation.
+- Front / back movements.
+- Turn left / right movements.
+- Color sensor trigger point.
+Call drivetrain initialization function with configuration.
+- Need formula for steering servo angle. Use gyro?
+- Front / back with color sensor logic.
+
+Read and parse movements file.
+
+Print configuration info.
+Calculate end coordinate.
+Speak ready.
+
+Wait for touch sensor to be actuated.
+
+Follow movements. Call movement functions from drivetrain.
+Color sensor movement function only uses the color sensor if it's active in config.
+
+Remember to reset the encoders and related items on actual start up.
+
+Configuration redundancy testing.

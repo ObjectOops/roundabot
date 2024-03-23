@@ -28,7 +28,8 @@ class Path:
         ret = []
         for action in queue:
             if action not in action_type_mapping:
-                print_error(__name__, f"Action \"{action}\" not found in action type mapping.")
+                print_log(__name__, f"Action \"{action}\" not found in action type mapping.")
+                continue
             delta = action_type_mapping[action]
             if len(delta) != 2:
                 print_warning(__name__, f"Delta {delta} does not have a length of 2.")
@@ -38,6 +39,9 @@ class Path:
             ret.append((x, y))
             print_log(__name__, f"Added coordinate {(x, y)}.")
         return ret
+
+    def complete(self) -> bool:
+        return len(self.queue) == 0
 
     def next_action(self) -> function:
         print_log(__name__, f"Popped action \"{self.queue[len(self.queue) - 1].__name__}\".")
