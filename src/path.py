@@ -9,33 +9,37 @@ class Path:
     def __init__(self, action_mapping: dict[str, function]):
         self.action_mapping = action_mapping
         self.queue = []
+        self.identifiers = []
         self.current = 0
 
     def load_path(self, file_path: str):
         with open(file_path, 'r') as fin:
             print_log(__name__, "Opened path file " + file_path + ".")
             lines = fin.readlines()
-            identifiers = [token.strip() for token in line.split(';') for line in lines]
-            for identifier in identifiers:
+            for line in lines:
+                tokens = line.split(';')
+                for token in tokens:
+                    self.identifiers.append(token.strip())
+            for identifier in self.identifiers:
                 if identifier not in self.action_mapping:
                     print_error(__name__, "Identifier \"" + identifier + "\" not found in action mapping.")
-                self.queue.append(self.action_mapping[identifer])
+                self.queue.append(self.action_mapping[identifier])
                 print_log(__name__, "Added action \"" + identifier + "\" to queue.")
             
     def calculate_coords(self, x: int, y: int, action_type_mapping: dict[str, ActionType]) -> list[tuple[int, int]]:
-        ret = []
-        for action in queue:
-            if action not in action_type_mapping:
-                print_log(__name__, "Action \"" + action + "\" not found in action type mapping.")
+        ret = [(x, y)]
+        for identifier in self.identifiers:
+            if identifier not in action_type_mapping:
+                print_log(__name__, "Action \"" + identifier + "\" not found in action type mapping.")
                 continue
-            delta = action_type_mapping[action]
+            delta = action_type_mapping[identifier]
             if len(delta) != 2:
                 print_warning(__name__, "Delta " + delta + " does not have a length of 2.")
             dx, dy = delta
             x += dx
             y += dy
             ret.append((x, y))
-            print_log(__name__, "Added coordinate " + (x, y) + ".")
+            print_log(__name__, "Added coordinate " + str((x, y)) + ".")
         return ret
 
     def complete(self) -> bool:

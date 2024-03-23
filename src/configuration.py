@@ -14,7 +14,7 @@ class Config:
             lines = fin.readlines()
             for line in lines:
                 line = line.strip()
-                if line.startswith('#'):
+                if line.startswith('#') or len(line) == 0:
                     continue
                 if ':' not in line:
                     print_error(__name__, "Configuration syntax error in \"" + line + "\".")
@@ -22,7 +22,7 @@ class Config:
                 if key in self._mapping:
                     print_warning(__name__, "Key \"" + key + "\" is already present in " + config_path + ".")
                 self._mapping[key.strip()] = value.strip()
-                print_log(__name__, "Set key-value pair " + ({key.strip()}, {value.strip()}) + ".")
+                print_log(__name__, "Set key-value pair " + str((key.strip(), value.strip())) + ".")
     
     def get_str(self, key: str) -> str:
         if key not in self._mapping:
@@ -35,7 +35,9 @@ class Config:
             print_error(__name__, "Key \"" + key + "\" not found.")
         else:
             value = self._mapping[key]
-            if not value.isnumeric():
+            try:
+                float(value)
+            except:
                 print_error(__name__, "Value \"" + value + "\" from key \"" + key + "\" is not numeric.")
         self._used.add(key)
         return float(self._mapping[key])

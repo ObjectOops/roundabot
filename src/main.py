@@ -13,10 +13,13 @@ from drivetrain import Drivetrain
 from path import Path, ActionType
 from printing import *
 
+do_not_wait = False
+
 def prompt_continue():
+    global do_not_wait
     print_log(__name__, "Waiting for continue...")
     pressed = None
-    while True:
+    while not do_not_wait:
         pressed = ev3.buttons.pressed()
         if Button.CENTER in pressed or Button.DOWN in pressed:
             break
@@ -28,9 +31,12 @@ def prompt_continue():
 
 if __name__ == "__main__":
     ev3 = EV3Brick()
-    start_button = TouchSensor(Port.S4)
+    set_screen(ev3)
+    start_button = TouchSensor(Port.S1)
 
-    config = Config("assets/config.txt")
+    ev3.screen.print("Roundabot has been started!")
+
+    config = Config("/home/robot/roundabot/assets/config.txt")
     print_log(__name__, "Initialized configuration.")
     drivetrain = Drivetrain(config)
     print_log(__name__, "Initialized drivetrain.")
@@ -42,14 +48,18 @@ if __name__ == "__main__":
         "ic" : drivetrain.drive_forward_color_sensor
     })
     print_log(__name__, "Initialized path.")
-    path.load_path("assets/paths/" + config.get_str("Run Path"))
+    path.load_path("/home/robot/roundabot/assets/paths/" + config.get_str("Run Path"))
     print_log(__name__, "Loaded path.")
     prompt_continue()
 
+    show_these = [
+        "*"
+    ]
     for option in config._mapping:
-        s = "{option}: " + config._mapping[option]
+        s = option + ": " + config._mapping[option]
         print_log(__name__, s)
-        brick.print(s)
+        if show_these[0] == "*" or option in show_these:
+            ev3.screen.print(s)
 
     prompt_continue()
     if is_enabled(config.get_str("Competition Mode")):
@@ -60,19 +70,21 @@ if __name__ == "__main__":
             "j" : ActionType.LEFT, 
             "l" : ActionType.RIGHT
         })
-        tile = 10
+        tile = 20
         ev3.screen.clear()
         for x, y in field:
-            ev3.screen.draw_box(x, y, x + tile, y + tile)
+            ev3.screen.draw_box(x * tile, y * tile, x * tile + tile, y * tile + tile)
         for x, y in coords:
-            ev3.screen.draw_box(x, y, x + tile, y + tile, fill=True)
+            y = 3 - y
+            ev3.screen.draw_box(x * tile, y * tile, x * tile + tile, y * tile + tile, fill=True)
         prompt_continue()
     
     if config.redundant():
-        print_warning(__name__, "Unused configuration options detected " + config._used.difference(config._mapping.keys()))
+        print_warning(__name__, "Unused configuration options detected " + str(list(set(config._mapping.keys()).difference(config._used))))
     
-    print_log("Configuration complete.")
-    ev3.speaker.say("Configuration complete. Waiting for touch sensor actuation.")
+    print_log(__name__, "Configuration complete.")
+    ev3.speaker.set_speech_options(voice="f3", pitch=70)
+    ev3.speaker.say("Waiting for touch sensor actuation.")
 
     while not start_button.pressed():
         wait(100)

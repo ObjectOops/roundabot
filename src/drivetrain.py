@@ -20,17 +20,19 @@ from filter import *
 class Drivetrain:
 
     def __init__(self, config: Config):
-        self.left_motor_direction = get_direction(config.get_str("Left Motor Direction"))
-        self.right_motor_direction = get_direction(config.get_str("Right Motor Direction"))
-        self.steering_motor_direction = get_direction(config.get_str("Steering Motor Direction"))
+        self.left_motor_direction = self.get_direction(config.get_str("Left Motor Direction"))
+        self.right_motor_direction = self.get_direction(config.get_str("Right Motor Direction"))
+        self.steering_motor_direction = self.get_direction(config.get_str("Steering Motor Direction"))
+
+        self.wheel_diameter = config.get_num("Wheel Diameter")
+        self.track_width = config.get_num("Track Width")
 
         self.left_motor = Motor(Port.D, positive_direction=self.left_motor_direction)
-        self.right_motor = Motor(Port.A, position_direction=self.right_motor_direction)
-        self.steering_motor = Motor(Port.B, positive_direction=self.steering_motor_direction)
+        self.right_motor = Motor(Port.B, positive_direction=self.right_motor_direction)
+        self.steering_motor = Motor(Port.A, positive_direction=self.steering_motor_direction)
         self.drive_base = DriveBase(self.left_motor, self.right_motor, self.wheel_diameter, self.track_width)
-        self.color_sensor = ColorSensor(Port.S1)
+        self.color_sensor = ColorSensor(Port.S4)
     
-        self.wheel_diameter = config.get_num("Wheel Diameter")
         self.turn_steering_angle = config.get_num("Turn Steering Angle")
         self.turn_wait = config.get_num("Turn Wait")
         self.cycle_wait = config.get_num("Cycle Wait")
@@ -102,10 +104,9 @@ class Drivetrain:
             self.tpid_ir = config.get_num("Turn PID Integral Rate")
             self.tpid_lm = config.get_num("Turn PID Integral Limit")
 
-        self.track_width = config.get_num("Track Width")
-
         self.forward_delta = config.get_num("Forward Delta")
         self.backward_delta = config.get_num("Backward Delta")
+        self.steering_origin = config.get_num("Steering Origin")
         if self.forward_delta - self.backward_delta >= 0.1 * 0.5 * (self.forward_delta + self.backward_delta):
             print_warning(__name__, "Forward and backward deltas are too far apart.")
         
@@ -118,10 +119,10 @@ class Drivetrain:
 
         csm = config.get_str("Color Sensor Trigger Type")
         valid_color_sensor_modes = {
-            "color" : (ColorSensorMode.BASIC_COLOR, "Null"), 
-            "ambient" : (ColorSensorMode.AMBIENT, "Color Sensor Trigger Ambient Delta"), 
-            "reflection" : (ColorSensorMode.REFLECTION, "Color Sensor Trigger Reflection Delta"), 
-            "hue" : (ColorSensorMode.HUE, "Color Sensor Trigger Hue Delta")
+            "color" : (ColorSensorMode.BASIC_COLOR, config.get_str("Null")), 
+            "ambient" : (ColorSensorMode.AMBIENT, config.get_num("Color Sensor Trigger Ambient Delta")), 
+            "reflection" : (ColorSensorMode.REFLECTION, config.get_num("Color Sensor Trigger Reflection Delta")), 
+            "hue" : (ColorSensorMode.HUE, config.get_num("Color Sensor Trigger Hue Delta"))
         }
         if csm not in valid_color_sensor_modes:
             print_error("Invalid color sensor trigger type \"" + csm + "\".")
@@ -153,19 +154,19 @@ class Drivetrain:
         self.right_motor.stop()
         self.drive_base.stop()
         
-    def get_direction(s: str) -> Direction:
+    def get_direction(self, s: str) -> Direction:
         if s != "forward" and s != "reverse":
             print_warning(__name__, "Invalid direction value \"" + s + "\". Falling back to forward.")
         return Direction.CLOCKWISE if s == "forward" else Direction.COUNTERCLOCKWISE
     
     def drive_forward(self):
-        self.steering_motor.track_target(0)
+        self.steering_motor.track_target(self.steering_origin)
         wait(self.turn_wait)
         self.drive_base.straight(self.forward_delta)
     
     def drive_forward_color_sensor(self):
         color_sensor_generator = test_color_sensor()
-        self.steering_motor.track_target(0)
+        self.steering_motor.track_target(self.steering_origin)
         wait(self.turn_wait)
         self.drive_base.straight(self.color_sensor_pre_forward_delta)
         target_distance = self.drive_base.distance() + self.color_sensor_forward_delta
@@ -202,14 +203,14 @@ class Drivetrain:
                 r, g, b = self.color_sensor.rgb()
                 yield abs(rgb2hsv(r, g, b)[0] - initial_hue) >= self.color_sensor_mode[1]
 
-    def drive_backward():
-        self.steering_motor.track_target(0)
+    def drive_backward(self):
+        self.steering_motor.track_target(self.steering_origin)
         wait(self.turn_wait)
         self.drive_base.straight(-self.backward_delta)
     
-    def turn_left():
+    def turn_left(self):
         self.drive_base.stop()
-        self.steering_motor.track_target(self.turn_steering_angle)
+        self.steering_motor.track_target(self.turn_steering_angle + self.steering_origin)
         wait(self.turn_wait)
         
         heading = self.drive_base.angle()
@@ -223,7 +224,7 @@ class Drivetrain:
             cond = abs(err) > self.heading_position_tolerance and timer.time() < self.move_timeout
             if not cond:
                 break
-            heading, left, right = calculate_heading_manual(heading, left, right)
+            heading, left, right = self.calculate_heading_manual(heading, left, right)
             self.right_motor.run(err * self.tpid_Kp)
             self.left_motor.run((original_left - left) * self.dpid_Kp)
             wait(self.cycle_wait)
@@ -234,9 +235,9 @@ class Drivetrain:
 
         self.drive_base.straight(self.turn_forward_delta)
 
-    def turn_right():
+    def turn_right(self):
         self.drive_base.stop()
-        self.steering_motor.track_target(self.turn_steering_angle)
+        self.steering_motor.track_target(self.turn_steering_angle + self.steering_origin)
         wait(self.turn_wait)
         
         heading = self.drive_base.angle()
@@ -250,7 +251,7 @@ class Drivetrain:
             cond = abs(err) > self.heading_position_tolerance and timer.time() < self.move_timeout
             if not cond:
                 break
-            heading, left, right = calculate_heading_manual(heading, left, right)
+            heading, left, right = self.calculate_heading_manual(heading, left, right)
             self.left_motor.run(err * self.tpid_Kp)
             self.right_motor.run((original_right - right) * self.dpid_Kp)
             wait(self.cycle_wait)
@@ -261,15 +262,15 @@ class Drivetrain:
 
         self.drive_base.straight(self.turn_forward_delta)
     
-    def calculate_heading_manual(heading_previous, left_previous: float, right_previous: float) -> tuple[float, float, float]:
+    def calculate_heading_manual(self, heading_previous, left_previous: float, right_previous: float) -> tuple[float, float, float]:
         # Reference: https://github.com/8696-Trobotix/mollusc/blob/03b87be3b62fa3d2800822e34b83919a329c2cbc/auto/odometry/DeadWheels.java
         dl = self.left_motor.angle() / 180 * math.pi * self.wheel_diameter / 2 - left_previous
         dr = self.right_motor.angle() / 180 * math.pi * self.wheel_diameter / 2 - right_previous
         dh = (dl - dr) / self.track_width
         return (heading_previous + dh, left_previous + dl, right_previous + dr)
 
-    def turn_in_place(angle: float):
-        self.steering_motor.track_target(90 * math.copysign(1, angle))
+    def turn_in_place(self, angle: float):
+        self.steering_motor.track_target(90 * math.copysign(1, angle) + self.steering_origin)
         wait(self.turn_wait)
         self.drive_base.turn(angle)
 
