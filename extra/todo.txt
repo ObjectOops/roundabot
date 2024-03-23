@@ -27,3 +27,10 @@ Color sensor movement function only uses the color sensor if it's active in conf
 Remember to reset the encoders and related items on actual start up.
 
 Configuration redundancy testing.
+
+python3 -m venv .venv
+. .venv/bin/activate
+pip install --upgrade pip
+pip install python-ev3dev2
+
+Select interpreter.

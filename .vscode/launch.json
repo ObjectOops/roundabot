@@ -5,13 +5,15 @@
             "name": "Download and Run roundabot",
             "type": "ev3devBrowser",
             "request": "launch",
-            "program": "/home/robot/${workspaceFolderBasename}/roundabot.py"
+            "program": "/home/robot/${workspaceFolderBasename}/roundabot.py",
+            "interactiveTerminal": false
         },
         {
             "name": "Download and Run Current File",
             "type": "ev3devBrowser",
             "request": "launch",
-            "program": "/home/robot/${workspaceFolderBasename}/${relativeFile}"
+            "program": "/home/robot/${workspaceFolderBasename}/${relativeFile}",
+            "interactiveTerminal": true
         }
     ]
 }

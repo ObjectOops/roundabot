@@ -1,4 +1,4 @@
 {
     "files.eol": "\n",
-    "ev3devBrowser.download.include": "{src/**,assets/**}",
+    "ev3devBrowser.download.include": "{src/**,assets/**,extra/**}",
 }
