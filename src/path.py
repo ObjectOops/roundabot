@@ -6,7 +6,7 @@ from printing import *
 
 class Path:
 
-    def __init__(self, action_mapping: dict[str, bound_method]):
+    def __init__(self, action_mapping: dict[str, bound_method | function]):
         self.action_mapping = action_mapping
         self.queue = []
         self.identifiers = []
@@ -45,8 +45,14 @@ class Path:
     def complete(self) -> bool:
         return len(self.queue) == 0
 
-    def next_action(self) -> bound_method:
-        print_log(__name__, "Popped action \"" + self.queue[len(self.queue) - 1].__name__ + "\".")
+    def prepare(self):
+        self.queue.reverse()
+
+    def next_action(self) -> bound_method | function:
+        try:
+            print_log(__name__, "Popped action \"" + self.queue[len(self.queue) - 1].__name__ + "\".")
+        except AttributeError:
+            print_log(__name__, "Popped action \"" + str(self.queue[len(self.queue) - 1]) + "\".")
         return self.queue.pop(len(self.queue) - 1)
 
 class ActionType():

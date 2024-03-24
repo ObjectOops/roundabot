@@ -4,66 +4,67 @@
 # Time is in ms.
 
 # enabled | disabled
+Prompt Do Not Wait: enabled
 Competition Mode: disabled
 
 Start Coordinate X: 0
 Start Coordinate Y: 0
 
-Wheel Diameter: 50
-Turn Steering Angle: 30
+Wheel Diameter: 32
+Turn Steering Angle: 80
 Turn Wait: 250
 Cycle Wait: 50
 Move Timeout: 5000
 
-Run Path: test
+Run Path: test.txt
 # enabled | disabled
 Color Sensor: enabled
 
-Target Distance Position Tolerance: 1
-Target Distance Speed Tolerance: 1
-Target Heading Position Tolerance: 1
-Target Heading Speed Tolerance: 1
+Target Distance Position Tolerance: 8
+Target Distance Speed Tolerance: 9
+Target Heading Position Tolerance: 2
+Target Heading Speed Tolerance: 19
 # enabled | disabled
 Use Distance Tolerance Defaults: disabled
 Use Heading Tolerance Defaults: disabled
 
-Straight Speed: 1
-Straight Acceleration: 1
-Turn Rate: 1
-Turn Acceleration: 1
+Straight Speed: 300
+Straight Acceleration: 600
+Turn Rate: 90
+Turn Acceleration: 180
 # enabled | disabled
 Use Kinematic Defaults: disabled
 
-Drive PID Kp: 0
-Drive PID Ki: 0
-Drive PID Kd: 0
+Drive PID Kp: 200
+Drive PID Ki: 600
+Drive PID Kd: 2
 Drive PID Kf: 0
-Drive PID Integral Rate: 0
-Drive PID Integral Limit: 0
+Drive PID Integral Rate: 2
+Drive PID Integral Limit: 8
 # enabled | disabled
 Use Drive PID Defaults: disabled
 
-Turn Drive PID Kp: 0
-Turn Drive PID Ki: 0
-Turn Drive PID Kd: 0
-Turn Drive PID Kf: 0
-Turn Drive PID Integral Rate: 0
-Turn Drive PID Integral Limit: 0
+Turn PID Kp: 200
+Turn PID Ki: 600
+Turn PID Kd: 2
+Turn PID Kf: 0
+Turn PID Integral Rate: 1
+Turn PID Integral Limit: 6
 # enabled | disabled
 Use Turn PID Defaults: disabled
 
-Track Width: 10
+Track Width: 155
 
-Forward Delta: 100
-Backward Delta: -100
+Forward Delta: 500
+Backward Delta: 500
 Steering Origin: 0
 
-Turn Left Outer Delta: 100
+Turn Left Outer Delta: 300
 Turn Left Inner Delta: 0
-Turn Right Outer Delta: 100
+Turn Right Outer Delta: 300
 Turn Right Inner Delta: 0
 
-Turn Forward Delta: 50
+Turn Forward Delta: 200
 
 # color | ambient | reflection | hue
 Color Sensor Trigger Type: color
@@ -71,15 +72,15 @@ Color Sensor Trigger Ambient Delta: 10
 Color Sensor Trigger Reflection Delta: 10
 Color Sensor Trigger Hue Delta: 10
 
-Color Sensor Pre Forward Delta: 5
-Color Sensor Forward Delta: 10
-Color Sensor Backward Delta: 10
+Color Sensor Pre Forward Delta: 0
+Color Sensor Forward Delta: 50
+Color Sensor Backward Delta: 20
 
 # forward / reverse
 Left Motor Direction: reverse
 Right Motor Direction: reverse
 Steering Motor Direction: reverse
 
-Low-Pass Filter Gain: 0.8
+# Low-Pass Filter Gain: 0.5
 
 Null: null

@@ -176,12 +176,14 @@ class Drivetrain:
             cond = abs(err) > self.distance_position_tolerance and timer.time() < self.move_timeout
             if not cond:
                 break
-            self.drive_base.drive(err * self.dpid_Kp, 0)
+            self.drive_base.drive(-(err * self.dpid_Kp), 0)
             if next(color_sensor_generator):
                 print_log(__name__, "Color sensor detected target point.")
                 self.drive_base.straight(-self.color_sensor_backward_delta)
                 break
             wait(self.cycle_wait)
+        if timer.time() >= self.move_timeout:
+            print_warning(__name__, "Move timed out.")
     
     def test_color_sensor(self) -> bool:
         if self.color_sensor_mode[0] == ColorSensorMode.BASIC_COLOR:
@@ -210,14 +212,14 @@ class Drivetrain:
     
     def turn_left(self):
         self.drive_base.stop()
-        self.steering_motor.track_target(self.turn_steering_angle + self.steering_origin)
+        self.steering_motor.track_target(-(self.turn_steering_angle + self.steering_origin))
         wait(self.turn_wait)
         
         heading = self.drive_base.angle()
         target_heading = heading - 90
-        left = self.left_motor.angle() / 180 * math.pi * self.wheel_diameter / 2
+        left = math.radians(self.left_motor.angle()) * self.wheel_diameter / 2
         original_left = left + self.tl_inner_delta
-        right = self.right_motor.angle() / 180 * math.pi * self.wheel_diameter / 2
+        right = math.radians(self.right_motor.angle()) * self.wheel_diameter / 2
         timer = StopWatch()
         while True:
             err = heading - target_heading
@@ -228,11 +230,17 @@ class Drivetrain:
             self.right_motor.run(err * self.tpid_Kp)
             self.left_motor.run((original_left - left) * self.dpid_Kp)
             wait(self.cycle_wait)
+        if timer.time() >= self.move_timeout:
+            print_warning(__name__, "Move timed out.")
         
         # Alternatively, just run to a predetermined value.
         # self.left_motor.hold()
         # self.right_motor.run_angle(self.straight_speed, self.tl_outer_delta)
 
+        self.drive_base.stop()
+        wait(self.turn_wait)
+        self.steering_motor.track_target(self.steering_origin)
+        wait(self.turn_wait)
         self.drive_base.straight(self.turn_forward_delta)
 
     def turn_right(self):
@@ -242,8 +250,8 @@ class Drivetrain:
         
         heading = self.drive_base.angle()
         target_heading = heading + 90
-        left = self.left_motor.angle() / 180 * math.pi * self.wheel_diameter / 2
-        right = self.right_motor.angle() / 180 * math.pi * self.wheel_diameter / 2
+        left = math.radians(self.left_motor.angle()) * self.wheel_diameter / 2
+        right = math.radians(self.right_motor.angle()) * self.wheel_diameter / 2
         original_right = right + self.tr_inner_delta
         timer = StopWatch()
         while True:
@@ -252,21 +260,27 @@ class Drivetrain:
             if not cond:
                 break
             heading, left, right = self.calculate_heading_manual(heading, left, right)
-            self.left_motor.run(err * self.tpid_Kp)
+            self.left_motor.run(-(err * self.tpid_Kp))
             self.right_motor.run((original_right - right) * self.dpid_Kp)
             wait(self.cycle_wait)
+        if timer.time() >= self.move_timeout:
+            print_warning(__name__, "Move timed out.")
         
         # Alternatively, just run to a predetermined value.
         # self.right_motor.hold()
         # self.left_motor.run_angle(self.straight_speed, self.tr_outer_delta)
 
+        self.drive_base.stop()
+        wait(self.turn_wait)
+        self.steering_motor.track_target(self.steering_origin)
+        wait(self.turn_wait)
         self.drive_base.straight(self.turn_forward_delta)
     
     def calculate_heading_manual(self, heading_previous, left_previous: float, right_previous: float) -> tuple[float, float, float]:
         # Reference: https://github.com/8696-Trobotix/mollusc/blob/03b87be3b62fa3d2800822e34b83919a329c2cbc/auto/odometry/DeadWheels.java
-        dl = self.left_motor.angle() / 180 * math.pi * self.wheel_diameter / 2 - left_previous
-        dr = self.right_motor.angle() / 180 * math.pi * self.wheel_diameter / 2 - right_previous
-        dh = (dl - dr) / self.track_width
+        dl = math.radians(self.left_motor.angle()) * self.wheel_diameter / 2 - left_previous
+        dr = math.radians(self.right_motor.angle()) * self.wheel_diameter / 2 - right_previous
+        dh = math.degrees((dl - dr) / self.track_width)
         return (heading_previous + dh, left_previous + dl, right_previous + dr)
 
     def turn_in_place(self, angle: float):

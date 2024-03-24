@@ -39,7 +39,7 @@ if __name__ == "__main__":
         ("Drive Base Turn Acceleration", turn_acceleration), 
         ("Drive Base Speed", dbd_speed), 
         ("Drive Base Acceleration", dbd_acceleration), 
-        ("Drive Base PIDF", dbd_pidf), 
+        ("Drive Base PIDF", str(dbd_pidf) + " | " + str(dbh_pidf)), 
         ("Drive Base Speed Tolerance", dbd_tolerance_speed), 
         ("Drive Base Position Tolerance", dbd_tolerance_position), 
         ("Left Motor Speed", lm_speed), 

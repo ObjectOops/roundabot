@@ -48,7 +48,8 @@ if __name__ == "__main__":
         "j" : drivetrain.turn_left, 
         "l" : drivetrain.turn_right, 
         "ic" : drivetrain.drive_forward_color_sensor, 
-        "ta" : drivetrain.turn_in_place
+        "ta" : drivetrain.turn_in_place, 
+        "w" : wait
     })
     print_log(__name__, "Initialized path.")
     path.load_path("/home/robot/roundabot/assets/paths/" + config.get_str("Run Path"))
@@ -107,16 +108,28 @@ if __name__ == "__main__":
     ev3.speaker.say("Waiting for touch sensor actuation.")
 
     while not start_button.pressed():
-        wait(100)
+        wait(50)
     wait(250)
 
     turn_in_place_idx = 0
-    turn_in_place_values = [0]
+    turn_in_place_values = [10]
+    path.prepare()
     while not path.complete():
         action = path.next_action()
 
-        if action.__name__ == "turn_in_place":
+        try:
+            ev3.speaker.say(action.__name__)
+        except:
+            pass
+
+        if str(action) == "<function>": # Assume it's `wait`.
+            action(1000)
+        elif action.__name__ == "turn_in_place":
             action(turn_in_place_values[turn_in_place_idx])
             turn_in_place_idx += 1
         else:
             action()
+    
+    # Clean up.
+    drivetrain.steering_motor.track_target(0)
+    wait(1000)

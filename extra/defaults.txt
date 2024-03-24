@@ -4,7 +4,7 @@ Drive Base Turn Rate : 90
 Drive Base Turn Acceleration : 180
 Drive Base Speed : 300
 Drive Base Acceleration : 600
-Drive Base PIDF : (200, 600, 2, 8, 2, 0)
+Drive Base PIDF : (200, 600, 2, 8, 2, 0) | (200, 600, 2, 6, 1, 0)
 Drive Base Speed Tolerance : 19
 Drive Base Position Tolerance : 2
 Left Motor Speed : 800
