@@ -2,7 +2,7 @@
 
 import sys
 
-from pybricks.parameters import Port, Button
+from pybricks.parameters import Port, Button, Direction
 from pybricks.ev3devices import TouchSensor
 from pybricks.hubs import EV3Brick
 from pybricks.tools import wait
@@ -17,9 +17,11 @@ do_not_wait = False
 
 def prompt_continue():
     global do_not_wait
+    if do_not_wait:
+        return
     print_log(__name__, "Waiting for continue...")
     pressed = None
-    while not do_not_wait:
+    while True:
         pressed = ev3.buttons.pressed()
         if Button.CENTER in pressed or Button.DOWN in pressed:
             break
@@ -45,30 +47,46 @@ if __name__ == "__main__":
         "k" : drivetrain.drive_backward, 
         "j" : drivetrain.turn_left, 
         "l" : drivetrain.turn_right, 
-        "ic" : drivetrain.drive_forward_color_sensor
+        "ic" : drivetrain.drive_forward_color_sensor, 
+        "ta" : drivetrain.turn_in_place
     })
     print_log(__name__, "Initialized path.")
     path.load_path("/home/robot/roundabot/assets/paths/" + config.get_str("Run Path"))
     print_log(__name__, "Loaded path.")
+    do_not_wait = is_enabled(config.get_str("Prompt Do Not Wait"))
     prompt_continue()
 
     show_these = [
         "*"
     ]
     for option in config._mapping:
+        if show_these[0] == "None":
+            break
         s = option + ": " + config._mapping[option]
-        print_log(__name__, s)
         if show_these[0] == "*" or option in show_these:
+            print_log(__name__, s)
             ev3.screen.print(s)
+    
+    # observed_values = dict()
+    # attributes = dir(drivetrain)
+    # for attribute_name in attributes:
+    #     attribute_value = getattr(drivetrain, attribute_name, None)
+    #     attribute_value_type = type(attribute_value)
+    #     if attribute_value_type not in [float, str, bool, Direction]:
+    #         continue
+    #     if attribute_value in observed_values:
+    #         print_warning(__name__, "Duplicate for \"" + attribute_name + "\" detected against \"" + observed_values[attribute_value] + "\".")
+    #     observed_values[attribute_value] = attribute_name
 
     prompt_continue()
-    if is_enabled(config.get_str("Competition Mode")):
+    if not is_enabled(config.get_str("Competition Mode")):
         field = [(i, j) for j in range(4) for i in range(4)]
         coords = path.calculate_coords(config.get_num("Start Coordinate X"), config.get_num("Start Coordinate Y"), {
             "i" : ActionType.FORWARDS, 
             "k" : ActionType.BACKWARDS, 
             "j" : ActionType.LEFT, 
-            "l" : ActionType.RIGHT
+            "l" : ActionType.RIGHT, 
+            "ic" : ActionType.FORWARDS
         })
         tile = 20
         ev3.screen.clear()
@@ -80,16 +98,25 @@ if __name__ == "__main__":
         prompt_continue()
     
     if config.redundant():
-        print_warning(__name__, "Unused configuration options detected " + str(list(set(config._mapping.keys()).difference(config._used))))
+        print_warning(__name__, "Unused configuration options detected " + str(list(set(config._mapping.keys()).difference(config._used))) + ".")
     
     print_log(__name__, "Configuration complete.")
+    ev3.screen.clear()
+    ev3.screen.print("Ready!")
     ev3.speaker.set_speech_options(voice="f3", pitch=70)
     ev3.speaker.say("Waiting for touch sensor actuation.")
 
     while not start_button.pressed():
         wait(100)
-    
+    wait(250)
+
+    turn_in_place_idx = 0
+    turn_in_place_values = [0]
     while not path.complete():
         action = path.next_action()
 
-        action()
+        if action.__name__ == "turn_in_place":
+            action(turn_in_place_values[turn_in_place_idx])
+            turn_in_place_idx += 1
+        else:
+            action()

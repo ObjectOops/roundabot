@@ -165,7 +165,7 @@ class Drivetrain:
         self.drive_base.straight(self.forward_delta)
     
     def drive_forward_color_sensor(self):
-        color_sensor_generator = test_color_sensor()
+        color_sensor_generator = self.test_color_sensor()
         self.steering_motor.track_target(self.steering_origin)
         wait(self.turn_wait)
         self.drive_base.straight(self.color_sensor_pre_forward_delta)
