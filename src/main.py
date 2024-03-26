@@ -112,7 +112,7 @@ if __name__ == "__main__":
     wait(250)
 
     while not path.complete():
-        action, args = path.next_action()
+        identifier, action, args = path.next_action()
 
         try:
             ev3.speaker.say(action.__name__)
@@ -122,7 +122,7 @@ if __name__ == "__main__":
         try:
             action(*args)
         except:
-            print_warning(__name__, "Could not call action. Proceeding anyways.")
+            print_warning(__name__, "Could not execute \"" + identifier + "\". Proceeding anyways.")
 
     # Clean up.
     drivetrain.steering_motor.track_target(0)

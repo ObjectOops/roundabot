@@ -159,10 +159,10 @@ class Drivetrain:
             print_warning(__name__, "Invalid direction value \"" + s + "\". Falling back to forward.")
         return Direction.CLOCKWISE if s == "forward" else Direction.COUNTERCLOCKWISE
     
-    def drive_forward(self):
+    def drive_forward(self, tiles: int=1):
         self.steering_motor.track_target(self.steering_origin)
         wait(self.turn_wait)
-        self.drive_base.straight(self.forward_delta)
+        self.drive_base.straight(self.forward_delta * tiles)
     
     def drive_forward_color_sensor(self):
         color_sensor_generator = self.test_color_sensor()
@@ -205,10 +205,10 @@ class Drivetrain:
                 r, g, b = self.color_sensor.rgb()
                 yield abs(rgb2hsv(r, g, b)[0] - initial_hue) >= self.color_sensor_mode[1]
 
-    def drive_backward(self):
+    def drive_backward(self, tiles: int=1):
         self.steering_motor.track_target(self.steering_origin)
         wait(self.turn_wait)
-        self.drive_base.straight(-self.backward_delta)
+        self.drive_base.straight(-self.backward_delta * tiles)
     
     def turn_left(self):
         self.drive_base.stop()
