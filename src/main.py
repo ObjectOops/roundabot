@@ -111,25 +111,19 @@ if __name__ == "__main__":
         wait(50)
     wait(250)
 
-    turn_in_place_idx = 0
-    turn_in_place_values = [10]
-    path.prepare()
     while not path.complete():
-        action = path.next_action()
+        action, args = path.next_action()
 
         try:
             ev3.speaker.say(action.__name__)
         except:
             pass
 
-        if str(action) == "<function>": # Assume it's `wait`.
-            action(1000)
-        elif action.__name__ == "turn_in_place":
-            action(turn_in_place_values[turn_in_place_idx])
-            turn_in_place_idx += 1
-        else:
-            action()
-    
+        try:
+            action(*args)
+        except:
+            print_warning(__name__, "Could not call action. Proceeding anyways.")
+
     # Clean up.
     drivetrain.steering_motor.track_target(0)
     wait(1000)
