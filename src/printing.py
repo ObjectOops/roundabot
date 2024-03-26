@@ -37,13 +37,15 @@ def print_log(module_name: str, msg: str):
     # brick.screen.print(break_line(s))
 
 def print_warning(module_name: str, msg: str):
-    s = "\033[38;5;214m[WARNING] (" + module_name + ") " + msg + "\033[m"
+    b = "[WARNING] (" + module_name + ") " + msg
+    s = "\033[38;5;214m" + b + "\033[m"
     print(s)
-    brick.screen.print(break_line(s))
+    brick.screen.print(break_line(b))
     data_log.log(s)
 
 def print_error(module_name: str, msg: str):
-    s = "\033[38;5;196m[ERROR] (" + module_name + ") " + msg + "\033[m"
+    b = "[ERROR] (" + module_name + ") " + msg
+    s = "\033[38;5;196m" + b + "\033[m"
     print(s)
-    brick.screen.print(break_line(s))
+    brick.screen.print(break_line(b))
     data_log.log(s)
