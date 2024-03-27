@@ -3,7 +3,7 @@
 # import termios
 # import select
 # import sys
-import os
+# import os
 
 from pybricks.ev3devices import Motor, ColorSensor
 from pybricks.parameters import Port, Direction

@@ -19,8 +19,7 @@ class Path:
                 segments = line.split(';')
                 for segment in segments:
                     segment = segment.strip()
-                    tokens = segment.split(' ')
-                    tokens = [token for token in tokens if len(token) > 0]
+                    tokens = [token for token in segment.split(' ') if len(token) > 0]
                     if len(tokens) == 0:
                         continue
 
@@ -43,19 +42,47 @@ class Path:
 
     def calculate_coords(self, x: int, y: int, action_type_mapping: dict[str, ActionType]) -> list[tuple[int, int]]:
         ret = [(x, y)]
-        for identifier, action, args in self.queue:
+        heading = 0
+        for identifier, _, args in self.queue:
             if identifier not in action_type_mapping:
                 print_log(__name__, "Action \"" + identifier + "\" not found in action type mapping.")
                 continue
             delta = action_type_mapping[identifier]
-            if len(delta) != 2:
-                print_warning(__name__, "Delta " + delta + " does not have a length of 2.")
-            dx, dy = delta
-            x += dx
-            y += dy
-            ret.append((x, y))
-            print_log(__name__, "Added coordinate " + str((x, y)) + ".")
+            if len(delta) != 3:
+                print_warning(__name__, "Delta " + str(delta) + " does not have a length of 3.")
+            if delta == ActionType.LEFT:
+                heading -= 90
+            elif delta == ActionType.RIGHT:
+                heading += 90
+            
+            iterations = 1
+            if delta == ActionType.FORWARDS or delta == ActionType.BACKWARDS:
+                iterations = args[0] if len(args) > 0 else 1
+
+            for i in range(iterations):
+                dx, dy = self.rotate(delta, self.angle_wrap(heading) / 90)
+                x += dx
+                y += dy
+                ret.append((x, y))
+                print_log(__name__, "Added coordinate " + str((x, y)) + ".")
         return ret
+
+    def angle_wrap(self, degrees: float) -> float:
+        while degrees < 0 or degrees >= 360:
+            if degrees < 0:
+                degrees += 360
+            elif degrees >= 360:
+                degrees -= 360
+        return degrees
+    
+    def rotate(self, movement: tuple[float, float], positive_nineties: int) -> tuple[float, float]:
+        dx, dy, _ = movement
+        while positive_nineties > 0:
+            temp = dx
+            dx = dy
+            dy = -temp
+            positive_nineties -= 1
+        return (dx, dy)
 
     def complete(self) -> bool:
         return len(self.queue) == 0
@@ -68,7 +95,7 @@ class Path:
         return self.queue.pop(0)
 
 class ActionType():
-    FORWARDS = (0, 1)
-    BACKWARDS = (0, -1)
-    LEFT = (-1, 0)
-    RIGHT = (1, 0)
+    FORWARDS = (0, 1, 0)
+    BACKWARDS = (0, -1, 0)
+    LEFT = (0, 1, 1)
+    RIGHT = (0, 1, 2)

@@ -31,6 +31,9 @@ def prompt_continue():
     while Button.CENTER in ev3.buttons.pressed():
         wait(100)
 
+def wait2(ms: int=1000):
+    wait(ms)
+
 if __name__ == "__main__":
     ev3 = EV3Brick()
     set_screen(ev3)
@@ -49,7 +52,7 @@ if __name__ == "__main__":
         "l" : drivetrain.turn_right, 
         "ic" : drivetrain.drive_forward_color_sensor, 
         "ta" : drivetrain.turn_in_place, 
-        "w" : wait
+        "w" : wait2
     })
     print_log(__name__, "Initialized path.")
     path.load_path("/home/robot/roundabot/assets/paths/" + config.get_str("Run Path"))
@@ -96,6 +99,9 @@ if __name__ == "__main__":
         for x, y in coords:
             y = 3 - y
             ev3.screen.draw_box(x * tile, y * tile, x * tile + tile, y * tile + tile, fill=True)
+
+            wait(250)
+
         prompt_continue()
     
     if config.redundant():
@@ -114,15 +120,22 @@ if __name__ == "__main__":
     while not path.complete():
         identifier, action, args = path.next_action()
 
-        try:
-            ev3.speaker.say(action.__name__)
-        except:
-            pass
+        # try:
+        #     ev3.speaker.say(action.__name__)
+        # except:
+        #     pass
 
-        try:
-            action(*args)
-        except:
-            print_warning(__name__, "Could not execute \"" + identifier + "\". Proceeding anyways.")
+        while args is not None:
+            try:
+                action(*args)
+                break
+            except:
+                if len(args) == 0:
+                    args = None
+                    print_error(__name__, "Complete failure in executing \"" + identifier + "\".")
+                    raise Exception()
+                args.pop(len(args) - 1)
+                print_warning(__name__, "Could not execute \"" + identifier + "\". Reducing argument list to " + str(args) + ".")
 
     # Clean up.
     drivetrain.steering_motor.track_target(0)
