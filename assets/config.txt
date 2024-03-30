@@ -55,6 +55,7 @@ Use Turn PID Defaults: disabled
 
 Track Width: 155
 
+Start Delta: 400
 Forward Delta: 500
 Backward Delta: 500
 Steering Origin: 0

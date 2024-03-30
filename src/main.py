@@ -46,6 +46,7 @@ if __name__ == "__main__":
     drivetrain = Drivetrain(config)
     print_log(__name__, "Initialized drivetrain.")
     path = Path({
+        "s" : drivetrain.start_move, 
         "i" : drivetrain.drive_forward, 
         "k" : drivetrain.drive_backward, 
         "j" : drivetrain.turn_left, 

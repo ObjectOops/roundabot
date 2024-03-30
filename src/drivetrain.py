@@ -104,6 +104,7 @@ class Drivetrain:
             self.tpid_ir = config.get_num("Turn PID Integral Rate")
             self.tpid_lm = config.get_num("Turn PID Integral Limit")
 
+        self.start_delta = config.get_num("Start Delta")
         self.forward_delta = config.get_num("Forward Delta")
         self.backward_delta = config.get_num("Backward Delta")
         self.steering_origin = config.get_num("Steering Origin")
@@ -159,6 +160,11 @@ class Drivetrain:
             print_warning(__name__, "Invalid direction value \"" + s + "\". Falling back to forward.")
         return Direction.CLOCKWISE if s == "forward" else Direction.COUNTERCLOCKWISE
     
+    def start_move(self):
+        self.steering_motor.track_target(self.steering_origin)
+        wait(self.turn_wait)
+        self.drive_base.straight(self.start_delta)
+
     def drive_forward(self, tiles: int=1):
         self.steering_motor.track_target(self.steering_origin)
         wait(self.turn_wait)
