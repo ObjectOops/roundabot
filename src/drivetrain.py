@@ -70,6 +70,8 @@ class Drivetrain:
             self.turn_rate = config.get_num("Turn Rate")
             self.turn_acceleration = config.get_num("Turn Acceleration")
         
+        self.static_timeout = config.get_num("Static Timeout")
+
         self.dpid_defaults = is_enabled(config.get_str("Use Drive PID Defaults"))
         ddp, ddi, ddd, ddlm, ddir, ddf = self.drive_base.distance_control.pid()
         if self.dpid_defaults:
@@ -169,6 +171,11 @@ class Drivetrain:
         self.steering_motor.track_target(self.steering_origin)
         wait(self.turn_wait)
         self.drive_base.straight(self.forward_delta * tiles)
+
+    def drive_exact(self, millimeters: float=500):
+        self.steering_motor.track_target(self.steering_origin)
+        wait(self.turn_wait)
+        self.drive_base.straight(millimeters)
     
     def drive_forward_color_sensor(self):
         color_sensor_generator = self.test_color_sensor()
@@ -177,12 +184,17 @@ class Drivetrain:
         self.drive_base.straight(self.color_sensor_pre_forward_delta)
         target_distance = self.drive_base.distance() + self.color_sensor_forward_delta
         timer = StopWatch()
+        # static_time = 0
         while True:
             err = self.drive_base.distance() - target_distance
-            cond = abs(err) > self.distance_position_tolerance and timer.time() < self.move_timeout
+            t = timer.time()
+            # cond = (abs(err) > self.distance_position_tolerance or t - static_time < self.static_timeout) and t < self.move_timeout
+            cond = abs(err) > self.distance_position_tolerance and t < self.move_timeout
             if not cond:
                 break
-            self.drive_base.drive(-(err * self.dpid_Kp), 0)
+            if abs(err) > self.distance_position_tolerance:
+                static_time = t
+            self.drive_base.drive(self.clip(-self.straight_speed, -(err * self.dpid_Kp) / 2, self.straight_speed), 0)
             if next(color_sensor_generator):
                 print_log(__name__, "Color sensor detected target point.")
                 self.drive_base.straight(-self.color_sensor_backward_delta)
@@ -190,8 +202,12 @@ class Drivetrain:
             wait(self.cycle_wait)
         if timer.time() >= self.move_timeout:
             print_warning(__name__, "Move timed out.")
+        self.drive_base.stop()
     
     def test_color_sensor(self) -> bool:
+        if not self.color_sensor_enabled:
+            while True:
+                yield False
         if self.color_sensor_mode[0] == ColorSensorMode.BASIC_COLOR:
             initial_color = self.color_sensor.color()
             while True:
@@ -227,13 +243,17 @@ class Drivetrain:
         original_left = left + self.tl_inner_delta
         right = math.radians(self.right_motor.angle()) * self.wheel_diameter / 2
         timer = StopWatch()
+        static_time = 0
         while True:
             err = heading - target_heading
-            cond = abs(err) > self.heading_position_tolerance and timer.time() < self.move_timeout
+            t = timer.time()
+            cond = (abs(err) > self.heading_position_tolerance or t - static_time < self.static_timeout) and t < self.move_timeout
             if not cond:
                 break
+            if abs(err) > self.heading_position_tolerance:
+                static_time = t
             heading, left, right = self.calculate_heading_manual(heading, left, right)
-            self.right_motor.run(err * self.tpid_Kp)
+            self.right_motor.run(self.clip(-self.turn_rate, err * self.tpid_Kp, self.turn_rate))
             self.left_motor.run((original_left - left) * self.dpid_Kp)
             wait(self.cycle_wait)
         if timer.time() >= self.move_timeout:
@@ -260,13 +280,17 @@ class Drivetrain:
         right = math.radians(self.right_motor.angle()) * self.wheel_diameter / 2
         original_right = right + self.tr_inner_delta
         timer = StopWatch()
+        static_time = 0
         while True:
             err = heading - target_heading
-            cond = abs(err) > self.heading_position_tolerance and timer.time() < self.move_timeout
+            t = timer.time()
+            cond = (abs(err) > self.heading_position_tolerance or t - static_time < self.static_timeout) and t < self.move_timeout
             if not cond:
                 break
+            if abs(err) > self.heading_position_tolerance:
+                static_time = t
             heading, left, right = self.calculate_heading_manual(heading, left, right)
-            self.left_motor.run(-(err * self.tpid_Kp))
+            self.left_motor.run(self.clip(-self.turn_rate, -(err * self.tpid_Kp), self.turn_rate))
             self.right_motor.run((original_right - right) * self.dpid_Kp)
             wait(self.cycle_wait)
         if timer.time() >= self.move_timeout:
@@ -282,6 +306,9 @@ class Drivetrain:
         wait(self.turn_wait)
         self.drive_base.straight(self.turn_forward_delta)
     
+    def clip(self, l, v, h):
+        return min(max(l, v), h)
+    
     def calculate_heading_manual(self, heading_previous, left_previous: float, right_previous: float) -> tuple[float, float, float]:
         # Reference: https://github.com/8696-Trobotix/mollusc/blob/03b87be3b62fa3d2800822e34b83919a329c2cbc/auto/odometry/DeadWheels.java
         dl = math.radians(self.left_motor.angle()) * self.wheel_diameter / 2 - left_previous
@@ -289,10 +316,12 @@ class Drivetrain:
         dh = math.degrees((dl - dr) / self.track_width)
         return (heading_previous + dh, left_previous + dl, right_previous + dr)
 
-    def turn_in_place(self, angle: float):
+    def turn_in_place(self, angle: float=0):
         self.steering_motor.track_target(90 * math.copysign(1, angle) + self.steering_origin)
         wait(self.turn_wait)
         self.drive_base.turn(angle)
+        wait(self.turn_wait)
+        self.steering_motor.track_target(self.steering_origin)
 
 class ColorSensorMode():
     BASIC_COLOR = 1

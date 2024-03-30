@@ -1,5 +1,7 @@
 # Runtime configuration values.
 
+# Calibrated at ~7.5 V.
+
 # Units are in mm, deg, mm / s, or deg / s where applicable.
 # Time is in ms.
 
@@ -10,13 +12,13 @@ Competition Mode: disabled
 Start Coordinate X: 0
 Start Coordinate Y: 0
 
-Wheel Diameter: 32
-Turn Steering Angle: 80
+Wheel Diameter: 42.5
+Turn Steering Angle: 74
 Turn Wait: 250
-Cycle Wait: 50
+Cycle Wait: 10
 Move Timeout: 5000
 
-Run Path: test.txt
+Run Path: test4.txt
 # enabled | disabled
 Color Sensor: enabled
 
@@ -28,14 +30,16 @@ Target Heading Speed Tolerance: 19
 Use Distance Tolerance Defaults: disabled
 Use Heading Tolerance Defaults: disabled
 
-Straight Speed: 300
+Straight Speed: 100
 Straight Acceleration: 600
-Turn Rate: 90
+Turn Rate: 360
 Turn Acceleration: 180
 # enabled | disabled
 Use Kinematic Defaults: disabled
 
-Drive PID Kp: 200
+Static Timeout: 1000
+
+Drive PID Kp: 100
 Drive PID Ki: 600
 Drive PID Kd: 2
 Drive PID Kf: 0
@@ -44,7 +48,7 @@ Drive PID Integral Limit: 8
 # enabled | disabled
 Use Drive PID Defaults: disabled
 
-Turn PID Kp: 200
+Turn PID Kp: 25
 Turn PID Ki: 600
 Turn PID Kd: 2
 Turn PID Kf: 0
@@ -53,9 +57,9 @@ Turn PID Integral Limit: 6
 # enabled | disabled
 Use Turn PID Defaults: disabled
 
-Track Width: 155
+Track Width: 135
 
-Start Delta: 400
+Start Delta: 448
 Forward Delta: 500
 Backward Delta: 500
 Steering Origin: 0
@@ -65,7 +69,7 @@ Turn Left Inner Delta: 0
 Turn Right Outer Delta: 300
 Turn Right Inner Delta: 0
 
-Turn Forward Delta: 200
+Turn Forward Delta: 380
 
 # color | ambient | reflection | hue
 Color Sensor Trigger Type: color
@@ -73,9 +77,9 @@ Color Sensor Trigger Ambient Delta: 10
 Color Sensor Trigger Reflection Delta: 10
 Color Sensor Trigger Hue Delta: 10
 
-Color Sensor Pre Forward Delta: 0
-Color Sensor Forward Delta: 50
-Color Sensor Backward Delta: 20
+Color Sensor Pre Forward Delta: 100
+Color Sensor Forward Delta: 185
+Color Sensor Backward Delta: 15
 
 # forward / reverse
 Left Motor Direction: reverse

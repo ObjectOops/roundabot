@@ -47,6 +47,7 @@ if __name__ == "__main__":
     print_log(__name__, "Initialized drivetrain.")
     path = Path({
         "s" : drivetrain.start_move, 
+        "e" : drivetrain.drive_exact, 
         "i" : drivetrain.drive_forward, 
         "k" : drivetrain.drive_backward, 
         "j" : drivetrain.turn_left, 
@@ -108,6 +109,21 @@ if __name__ == "__main__":
     if config.redundant():
         print_warning(__name__, "Unused configuration options detected " + str(list(set(config._mapping.keys()).difference(config._used))) + ".")
     
+    print_log(__name__, "Adjusting steering...")
+    initial_angle = drivetrain.steering_motor.angle()
+    while True:
+        pressed = ev3.buttons.pressed()
+        if Button.CENTER in pressed:
+            break
+        elif Button.LEFT in pressed:
+            initial_angle -= 1
+            drivetrain.steering_motor.track_target(initial_angle)
+        elif Button.RIGHT in pressed:
+            initial_angle += 1
+            drivetrain.steering_motor.track_target(initial_angle)
+        wait(100)
+    print_log(__name__, "Initial steering angle set to " + str(initial_angle) + " degrees.")
+    
     print_log(__name__, "Configuration complete.")
     ev3.screen.clear()
     ev3.screen.print("Ready!")
@@ -138,7 +154,7 @@ if __name__ == "__main__":
                 if len(args) == 0:
                     args = None
                     print_error(__name__, "Complete failure in executing \"" + identifier + "\".")
-                    raise Exception()
+                    sys.exit()
                 args.pop(len(args) - 1)
                 print_warning(__name__, "Could not execute \"" + identifier + "\". Reducing argument list to " + str(args) + ".")
 
