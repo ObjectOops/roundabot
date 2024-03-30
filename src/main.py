@@ -118,6 +118,10 @@ if __name__ == "__main__":
         wait(50)
     wait(250)
 
+    drivetrain.left_motor.reset_angle(0)
+    drivetrain.right_motor.reset_angle(0)
+    drivetrain.steering_motor.reset_angle(0)
+
     while not path.complete():
         identifier, action, args = path.next_action()
 
