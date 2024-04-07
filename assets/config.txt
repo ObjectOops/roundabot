@@ -7,7 +7,7 @@
 
 # enabled | disabled
 Prompt Do Not Wait: enabled
-Competition Mode: disabled
+Competition Mode: enabled
 
 Start Coordinate X: 0
 Start Coordinate Y: 0
@@ -18,9 +18,9 @@ Turn Wait: 250
 Cycle Wait: 10
 Move Timeout: 5000
 
-Run Path: test4.txt
+Run Path: main.txt
 # enabled | disabled
-Color Sensor: enabled
+Color Sensor: disabled
 
 Target Distance Position Tolerance: 8
 Target Distance Speed Tolerance: 9
@@ -57,7 +57,7 @@ Turn PID Integral Limit: 6
 # enabled | disabled
 Use Turn PID Defaults: disabled
 
-Track Width: 135
+Track Width: 140
 
 Start Delta: 448
 Forward Delta: 500
@@ -69,7 +69,7 @@ Turn Left Inner Delta: 0
 Turn Right Outer Delta: 300
 Turn Right Inner Delta: 0
 
-Turn Forward Delta: 380
+Turn Forward Delta: 340
 
 # color | ambient | reflection | hue
 Color Sensor Trigger Type: color
