@@ -142,6 +142,15 @@ See [Figure 12](https://pybricks.com/ev3-micropython/startrun.html#fig-connectin
 20. To shutdown the Pi, run `sudo shutdown -h now` or use the desktop interface.
 > Please see Additional Resources below for troubleshooting and more in-depth information.
 
+## Additional Resources
+- [Raspberry Pi Documentation](https://www.raspberrypi.com/documentation/)
+- [Raspberry Pi Hotspot](https://www.raspberrypi.com/tutorials/host-a-hotel-wifi-hotspot/)
+- [USB Wikipedia](https://en.wikipedia.org/wiki/USB#Connector_type_quick_reference)
+- [ev3dev Homepage](https://www.ev3dev.org/)
+- [ev3dev-browser GitHub](https://github.com/ev3dev/vscode-ev3dev-browser)
+- [Pybricks Documentation](https://pybricks.com/ev3-micropython/)
+- Any printed materials that came with your Raspberry Pi.
+
 ## System Information (April 2024)
 ### Raspberry Pi
 ```
@@ -177,11 +186,3 @@ Version: 1.2.1
 Publisher: ev3dev
 VS Marketplace Link: https://open-vsx.org/vscode/item?itemName=ev3dev.ev3dev-browser
 ```
-
-## Additional Resources
-- [Raspberry Pi Documentation](https://www.raspberrypi.com/documentation/)
-- [Raspberry Pi Hotspot](https://www.raspberrypi.com/tutorials/host-a-hotel-wifi-hotspot/)
-- [USB Wikipedia](https://en.wikipedia.org/wiki/USB#Connector_type_quick_reference)
-- [ev3dev Homepage](https://www.ev3dev.org/)
-- [ev3dev-browser GitHub](https://github.com/ev3dev/vscode-ev3dev-browser)
-- [Pybricks Documentation](https://pybricks.com/ev3-micropython/)
